@@ -1,0 +1,77 @@
+id: 'f2-mistral-april-2024'
+base_path: '/data/zeljko'
+dataset: 'mimic-iii'
+to_box: True
+static_paths:
+  cat: '/data/zeljko/models/mc_modelpack_phase2_snomed_full_february_2022.zip'
+  raw_data: '/home/ubuntu/data/mimic/raw/noteevents.csv' # Has to be a CSV
+model: 
+  #base_name: 'olm/olm-gpt2-dec-2022'
+  base_name: 'mistralai/Mistral-7B-v0.1'
+tokenizer:
+  special_tokens: {'pad_token': '<PAD>', 'bos_token': '<s>', 'eos_token': '</s>'}
+  additional_tokens: ['<TIME>', '<SEP>']
+cat:
+  meta:
+    device: 'cpu'
+train:
+  days: 1
+  types: ['ALL_TYPES']
+  base_name: 'annotated_february_2022'
+  dataset_name: 'annotations_stream_phase3'
+  device: 'cuda'
+  min_count: 2
+  min_global_count: 100
+  max_timeline_len: 512 # Usually overwritten with another config
+  min_length: 10 # Of the timeline, so min 10 concepts
+  cntx_size: 50
+  use_context: True
+  sentence_limits: ["___", ".", ";", "!", "?", ".\n", ";\n", "?\n", "!\n", "___\n", "\n\n"] # If set sentence limits are used
+  token_type_prefix: {'True': '', 'Hypothetical': 'Hypothetical', 'False': 'No'}
+  ignore_index: -100
+  test_set_names: 
+  - 'first_one'
+  mini_eval_size: 20
+  mini_test_size: 20
+  hf_training_arguments:
+    output_dir: '/data/zeljko/tmp/'
+    bf16: True
+    gradient_accumulation_steps: 2 
+    per_device_eval_batch_size: 8
+    per_device_train_batch_size: 8
+    load_best_model_at_end: False
+    learning_rate: 1.0e-5 # Use float with 'e-x' notation
+    #    eval_accumulation_steps: 1 # Important, otherwise OOM when doing eval
+    weight_decay: 0.0
+    adam_beta1: 0.9
+    adam_beta2: 0.95
+    adam_epsilon: 1.0e-7
+    max_grad_norm: 1
+    num_train_epochs: 1
+    lr_scheduler_type: 'cosine'
+    warmup_ratio: 0.1
+    logging_strategy: 'steps'
+    logging_steps: 10
+    evaluation_strategy: 'steps'
+    eval_steps: 50
+    save_strategy: "steps"
+    save_steps: 100000
+    seed: 11
+    optim: 'adamw_torch'
+    do_eval: True
+    metric_for_best_model: 'eval_precision_new'
+    load_best_model_at_end: False # Do not set to True when doing 8bit training, save_pretrained does not work for me, so load will not work
+risk_prediction:
+  prompts:
+    - 
+      - 2419200 # 4 weeks / month
+      - "In the next month the patient is at risk of: "
+  bp:
+    - 
+      - 7257600 # 3 months
+      - "In the next three months the patient is at risk of: "
+
+    - 
+      - 604800 # week
+      - "In the next week the patient is at risk of: "
+  min_past_length: 10 # After this past can be cutoff, but does not have to be
