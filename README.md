@@ -1,8 +1,5 @@
-# MedGPT: Medical Concept Forecasting from Clinical Narratives
+# Foresight v2 - A Large Language Model Medical Forecaster
 
-<img src="https://github.com/w-is-h/MedGPT/blob/master/media/Patient%20timeline.png"/>
+## Code for the Foresight v2 paper
 
-## Installation
-`pip install --upgrade medgpt`
-
-## !!! WORK IN PROGRESS !!!
+It is a mess, but it does work.
